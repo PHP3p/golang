@@ -3,22 +3,57 @@ package main
 import (
 	"fmt"
 	"net"
+	"sync"
 )
 
 type Server struct {
 	Ip   string
 	Port int
+
+	//online user list
+	OnlineMap map[string]*User
+	mapLock   sync.RWMutex
+	//dispatch msg channel
+	Msg chan string
 }
 
-func NewServer(ip string,port int) *Server{
-	server:=&Server{Ip:ip,Port:port}
+func NewServer(ip string, port int) *Server {
+	server := &Server{Ip:ip, Port: port,OnlineMap: make(map[string]*User), Msg:make(chan string)}
 	return server
 
 }
 
+//监听广播消息 通知其他用户
+func (s *Server) ListenActiveOnline() {
+	for {
+		msg := <-s.Msg
+		s.mapLock.Lock()
+		for _, cli := range s.OnlineMap {
+			cli.C <- msg
+		}
+		s.mapLock.Unlock()
+
+	}
+}
+
+//广播消息
+func (s *Server) BroadCast(u *User, msg string) {
+	sendMsg := fmt.Sprintf("[%s]%s:%s", u.Addr, u.Name, msg)
+	s.Msg <- sendMsg
+}
 func (s *Server) Handler(conn net.Conn) {
 	//	 do something
 	fmt.Println("connect success")
+	//	user Online and dispatch msg
+	user := NewUser(conn)
+	s.mapLock.Lock()
+	s.OnlineMap[user.Name] = user
+	s.mapLock.Unlock()
+	//	and dispatch msg
+	s.BroadCast(user, "已上线")
+//	 当前handler阻塞
+	select {
+	}
 
 }
 func (s *Server) Start() {
@@ -28,6 +63,7 @@ func (s *Server) Start() {
 		return
 	}
 	defer res.Close()
+	go s.ListenActiveOnline()
 	for {
 		//accept
 		conn, err := res.Accept()
