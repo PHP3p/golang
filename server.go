@@ -46,19 +46,15 @@ func (s *Server) Handler(conn net.Conn) {
 	//	 do something
 	fmt.Println("connect success")
 	//	user Online and dispatch msg
-	user := NewUser(conn)
-	s.mapLock.Lock()
-	s.OnlineMap[user.Name] = user
-	s.mapLock.Unlock()
-	//	and dispatch msg
-	s.BroadCast(user, "已上线")
+	user := NewUser(conn,s)
+	user.Online()
 
 	go func() {
 		buf:=make([]byte,4096)
 		for  {
 			n,err:=conn.Read(buf)
 			if  n==0 {
-				s.BroadCast(user,"下线")
+				user.OffOnline()
 				return
 			}
 			if err != nil && err!=io.EOF{
