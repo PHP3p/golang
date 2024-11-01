@@ -62,8 +62,8 @@ func (s *Server) Handler(conn net.Conn) {
 				return
 			}
 			msg:= string(buf[:n-1])
-			s.BroadCast(user,msg)
-
+			//s.BroadCast(user,msg)迭代第4版容易产生逻辑错误 user.dealMsg()
+			user.dealMsg(msg)
 		}
 	}()
 //	 当前handler阻塞

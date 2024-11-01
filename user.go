@@ -1,6 +1,9 @@
 package main
 
-import "net"
+import (
+	"fmt"
+	"net"
+)
 
 type User struct {
 	Name string
@@ -31,8 +34,23 @@ func (u *User) OffOnline()  {
 	//	and dispatch msg
 	u.server.BroadCast(u, "下线")
 }
+
+func (u *User) SendUserMsg(msg string)  {
+	u.conn.Write([]byte(msg))
+}
+
 func (u *User) dealMsg(msg string)  {
-	u.server.BroadCast(u, msg)
+
+	if msg == "who" {
+		u.server.mapLock.Lock()
+		for _,user :=range u.server.OnlineMap{
+			onlineWho :=fmt.Sprintf("[%s]%s%s\n",user.Addr,user.Name,"在线...")
+			u.SendUserMsg(onlineWho)
+		}
+		u.server.mapLock.Unlock()
+	}else{
+		u.server.BroadCast(u, msg)
+	}
 }
 //listen current user
 func (u *User) ListenMsg()  {
