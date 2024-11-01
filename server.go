@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"sync"
+	"time"
 )
 
 type Server struct {
@@ -19,7 +20,7 @@ type Server struct {
 }
 
 func NewServer(ip string, port int) *Server {
-	server := &Server{Ip:ip, Port: port,OnlineMap: make(map[string]*User), Msg:make(chan string)}
+	server := &Server{Ip: ip, Port: port, OnlineMap: make(map[string]*User), Msg: make(chan string)}
 	return server
 
 }
@@ -46,28 +47,40 @@ func (s *Server) Handler(conn net.Conn) {
 	//	 do something
 	fmt.Println("connect success")
 	//	user Online and dispatch msg
-	user := NewUser(conn,s)
+	user := NewUser(conn, s)
 	user.Online()
-
+	isLive := make(chan bool)
 	go func() {
-		buf:=make([]byte,4096)
-		for  {
-			n,err:=conn.Read(buf)
-			if  n==0 {
+		buf := make([]byte, 4096)
+		for {
+			n, err := conn.Read(buf)
+			if n == 0 {
 				user.OffOnline()
 				return
 			}
-			if err != nil && err!=io.EOF{
-				fmt.Println("Conn Read err",err)
+			if err != nil && err != io.EOF {
+				fmt.Println("Conn Read err", err)
 				return
 			}
-			msg:= string(buf[:n-1])
+			msg := string(buf[:n-1])
 			//s.BroadCast(user,msg)迭代第4版容易产生逻辑错误 user.dealMsg()
 			user.dealMsg(msg)
+
+			isLive <- true
 		}
 	}()
-//	 当前handler阻塞
-	select {
+	//	 当前handler阻塞
+	/*select {
+	}*/
+	for {
+		select {
+		case <- isLive:
+		case <- time.After(time.Second * 10):
+			user.SendUserMsg("time out 被踢了")
+			close(user.C)
+			conn.Close()
+			return //或者runtime.Goexit()
+		}
 	}
 
 }
