@@ -37,10 +37,10 @@ func (client *Client) PrivateChat() {
 	var clientUser string
 	var chatMsg string
 	client.SelectUser()
-	fmt.Println("请输入聊天对象【用户名】,exit退出")
+	fmt.Println("私聊模式-请输入聊天对象【用户名】,exit退出")
 	fmt.Scanln(&clientUser)
 	for clientUser != "exit" {
-		fmt.Println("请输入聊天内容，exit退出")
+		fmt.Println("私聊模式-请输入聊天内容，exit退出")
 		fmt.Scanln(&chatMsg)
 		for chatMsg != "exit" {
 			if len(chatMsg) != 0 {
@@ -53,18 +53,18 @@ func (client *Client) PrivateChat() {
 
 			}
 			chatMsg = ""
-			fmt.Println("<<<请输入聊天内容，exit退出>>>")
+			fmt.Println("<<<私聊模式-请输入聊天内容，exit退出>>>")
 			fmt.Scanln(&chatMsg)
 		}
 		client.SelectUser()
-		fmt.Println("请输入聊天对象【用户名】,exit退出")
+		fmt.Println("私聊模式-请输入聊天对象【用户名】,exit退出")
 		fmt.Scanln(&clientUser)
 	}
 }
 func (client *Client) PublicChat() {
 	//	提示用户输入信息
 	var chatMsg string
-	fmt.Println("请输入聊天内容，exit退出")
+	fmt.Println("公聊模式-请输入聊天内容，exit退出")
 	fmt.Scanln(&chatMsg)
 	for chatMsg != "exit" {
 		//	发送到服务端
@@ -78,13 +78,13 @@ func (client *Client) PublicChat() {
 
 		}
 		chatMsg = ""
-		fmt.Println("<<<请输入聊天内容，exit退出>>>")
+		fmt.Println("<<<公聊模式-请输入聊天内容，exit退出>>>")
 		fmt.Scanln(&chatMsg)
 	}
 }
 func (client *Client) UpdateUserName() bool {
 
-	fmt.Println("请输入用户名，exit退出")
+	fmt.Println("请输入用户名进行修改，exit退出")
 	fmt.Scanln(&client.Name)
 	sendMsg := "rename|"+client.Name + "\n"
 	_, err := client.conn.Write([]byte(sendMsg))
