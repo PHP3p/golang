@@ -75,10 +75,15 @@ func (s *Server) Handler(conn net.Conn) {
 	for {
 		select {
 		case <- isLive:
-		case <- time.After(time.Second * 10):
+
+		case <- time.After(time.Second * 300):
+
 			user.SendUserMsg("time out 被踢了")
+
 			close(user.C)
+
 			conn.Close()
+
 			return //或者runtime.Goexit()
 		}
 	}
