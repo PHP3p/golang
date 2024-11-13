@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package services;
+
+option go_package = "../services"; // 修改为您的 Go 模块路径和子包
+
+message ProdRequest {
+    int32 prod_id = 1;
+}
+
+message ProdResponse {
+    int32 prod_stock = 1;
+}
